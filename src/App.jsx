@@ -17,16 +17,47 @@ function App() {
   const isReadyToAnalyze = useMemo(() => {
     if (mode === 'text') return textInput.trim().length > 0 && gender
     return false
-  }, [mode, textInput])
+  }, [mode, textInput, gender])
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!isReadyToAnalyze) return
     setIsAnalyzing(true)
-    // Placeholder for future model call
-    setTimeout(() => {
-      setResult(mockEmotionResult)
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: textInput,
+          gender: gender,
+        }),
+      })
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`)
+      }
+      
+      const data = await response.json()
+      
+      if (data.error) {
+        throw new Error(data.error)
+      }
+      
+      setResult(data)
+    } catch (error) {
+      console.error('Error analyzing emotion:', error)
+      // Fallback to mock result if API fails
+      setResult({
+        ...mockEmotionResult,
+        label: 'Error',
+        confidence: 0,
+        cues: [`Failed to analyze: ${error.message}`],
+      })
+    } finally {
       setIsAnalyzing(false)
-    }, 650)
+    }
   }
 
   const handleAudioPlaceholder = () => {
@@ -130,7 +161,7 @@ function App() {
             <div className="result">
               <div className="result-header">
                 <span className="result-title">Emotion</span>
-                <span className="pill">Model pending</span>
+                <span className="pill">Model active</span>
               </div>
               {result ? (
                 <>
