@@ -22,3 +22,21 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Model files
+*.pt
+*.pth
+*.h5
+*.ckpt
+
+# Environment
+.env
+.env.local
